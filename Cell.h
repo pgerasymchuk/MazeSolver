@@ -1,9 +1,10 @@
-#ifndef LAB3_CELL_H
-#define LAB3_CELL_H
+#ifndef MAZE_SOLVER_CELL_H
+#define MAZE_SOLVER_CELL_H
 
 struct Cell {
-    int vertex, distance;
-    Cell(int, int);
+    int vertex;
+    long long distance; //priority of the cell in the queue
+    Cell(int, long long);
     bool operator>(Cell);
     bool operator<(Cell);
 };

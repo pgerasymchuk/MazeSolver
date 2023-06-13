@@ -2,7 +2,14 @@
 
 MazeSolver::MazeSolver(Maze maze) : maze(maze) {}
 
-vector<int> MazeSolver::findPath(pair<int,int> sourceCoords, pair<int,int> targetCoords){
+// Manhattan distance between two cells: the exact cost of a path without walls,
+// so it never overestimates and A* still returns the shortest path
+int MazeSolver::heuristic(int vertex, int target){
+    int width = maze.getWidth();
+    return abs(vertex / width - target / width) + abs(vertex % width - target % width);
+}
+
+vector<int> MazeSolver::findPath(pair<int,int> sourceCoords, pair<int,int> targetCoords, Algorithm algorithm){
     int width = maze.getWidth();
     int height = maze.getHeight();
     int length = width * height;
@@ -11,8 +18,19 @@ vector<int> MazeSolver::findPath(pair<int,int> sourceCoords, pair<int,int> targe
     vector<int> path;
     vector<int> dist(length,0);
     vector<int> prev(length,-1);
+    // Dijkstra orders cells by distance from the source,
+    // A* by distance from the source plus the estimated distance to the target;
+    // on equal estimates A* prefers the cell closer to the target
+    auto priority = [&](int v, int distance) -> long long {
+        if (algorithm == Algorithm::Dijkstra){
+            return distance;
+        }
+        int h = heuristic(v, target);
+        return (long long)(distance + h) * length + h;
+    };
+    expandedCells = 0;
     PriorityQueue<Cell> pq;
-    pq.push(Cell(source,0));
+    pq.push(Cell(source,priority(source,0)));
     dist[source] = 0;
     for (int i=0;i<length;i++){
         if (i != source){
@@ -23,7 +41,8 @@ vector<int> MazeSolver::findPath(pair<int,int> sourceCoords, pair<int,int> targe
         Cell uCell = pq.top();
         pq.pop();
         int u = uCell.vertex;
-        if (uCell.distance == dist[u]){
+        if (uCell.distance == priority(u,dist[u])){ //skip outdated queue entries
+            expandedCells++;
             if (u == target){
                 while(u != -1){
                     path.push_back(u);
@@ -38,7 +57,7 @@ vector<int> MazeSolver::findPath(pair<int,int> sourceCoords, pair<int,int> targe
                 if (altDist < dist[v]){
                     dist[v] = altDist;
                     prev[v] = u;
-                    pq.push(Cell(v,altDist));
+                    pq.push(Cell(v,priority(v,altDist)));
                 }
             }
         }
@@ -46,9 +65,9 @@ vector<int> MazeSolver::findPath(pair<int,int> sourceCoords, pair<int,int> targe
     return path;
 }
 
-vector<int> MazeSolver::solve(pair<int,int> sourceCoords, pair<int,int> targetCoords){
+vector<int> MazeSolver::solve(pair<int,int> sourceCoords, pair<int,int> targetCoords, Algorithm algorithm){
     if (isValidCoords(sourceCoords) && isValidCoords(targetCoords)){
-        vector<int> path = findPath(sourceCoords,targetCoords);
+        vector<int> path = findPath(sourceCoords,targetCoords,algorithm);
         if (path.empty()){
             throw runtime_error("No path exists between source and target!");
         }
@@ -65,4 +84,8 @@ bool MazeSolver::isValidCoords(pair<int,int> coords){
         return 0;
     }
     return 1;
+}
+
+int MazeSolver::getExpandedCells(){
+    return expandedCells;
 }

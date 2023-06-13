@@ -1,5 +1,5 @@
-#ifndef LAB3_PRIORITY_QUEUE
-#define LAB3_PRIORITY_QUEUE
+#ifndef MAZE_SOLVER_PRIORITY_QUEUE
+#define MAZE_SOLVER_PRIORITY_QUEUE
 
 #include <vector>
 #include <stdexcept>

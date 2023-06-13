@@ -1,5 +1,5 @@
-#ifndef LAB3_FILE_READER_H
-#define LAB3_FILE_READER_H
+#ifndef MAZE_SOLVER_FILE_READER_H
+#define MAZE_SOLVER_FILE_READER_H
 
 #include <string>
 #include <vector>
