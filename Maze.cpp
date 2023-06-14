@@ -100,12 +100,7 @@ vector<vector<char>> Maze::draw(vector<int> path){
     vector<vector<char>> matrix = draw();
     for (int i=0;i<path.size();i++){
         pair<int,int> coords = getCoords(path[i]);
-        if (i<10){
-            matrix[coords.first][coords.second] = '0' + i;
-        }
-        else {
-            matrix[coords.first][coords.second] = 'a' + i - 10;
-        }
+        matrix[coords.first][coords.second] = PATH_SYMBOLS[i % PATH_SYMBOLS.size()];
     }
     return matrix;
 }

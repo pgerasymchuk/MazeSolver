@@ -1,5 +1,5 @@
-#ifndef LAB3_MAZE_H
-#define LAB3_MAZE_H
+#ifndef MAZE_SOLVER_MAZE_H
+#define MAZE_SOLVER_MAZE_H
 
 #include <vector>
 #include <string>
@@ -14,6 +14,8 @@ class Maze {
     const char SPACE = ' '; 
     const char WALL = 'X';
     vector<char> validChars = {SPACE, WALL};
+    // path steps are marked 0-9, a-z, A-Z and then the sequence repeats
+    const string PATH_SYMBOLS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     vector<string> validateInputData(vector<vector<char>>);
     pair<int,int> getCoords(int);
   public: 

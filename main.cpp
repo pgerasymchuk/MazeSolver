@@ -9,14 +9,20 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    if (argc != 3) {
+    if (argc != 3 && argc != 4) {
         cerr << "Usage: " << argv[0] 
-             << " <input_file_path> <output_file_path>" << endl;
+             << " <input_file_path> <output_file_path> [dijkstra|astar]" << endl;
         return 1;
     }
 
     string inputFilePath = argv[1];
     string outputFilePath = argv[2];
+    string algorithmName = argc == 4 ? argv[3] : "astar";
+    if (algorithmName != "dijkstra" && algorithmName != "astar") {
+        cerr << "Unknown algorithm: " << algorithmName << " (use dijkstra or astar)" << endl;
+        return 1;
+    }
+    Algorithm algorithm = algorithmName == "astar" ? Algorithm::AStar : Algorithm::Dijkstra;
 
     pair<int, int> startCoords, endCoords;
     
@@ -32,11 +38,14 @@ int main(int argc, char** argv) {
         Maze maze(parser.parse(reader.read(inputFilePath)));
 
         MazeSolver mazeSolver(maze);
-        vector<int> path = mazeSolver.solve(startCoords, endCoords);
+        vector<int> path = mazeSolver.solve(startCoords, endCoords, algorithm);
 
         reader.write(outputFilePath, parser.serialize(maze.draw(path)));
 
-        cout << "Maze solved successfully. Output written to " << outputFilePath << endl;
+        cout << "Maze solved with " << (algorithm == Algorithm::AStar ? "A*" : "Dijkstra")
+             << ": path length " << path.size() - 1
+             << ", expanded cells " << mazeSolver.getExpandedCells() << endl;
+        cout << "Output written to " << outputFilePath << endl;
     }
     catch (exception& e) {
         cerr << "Exception: " << e.what() << endl;
