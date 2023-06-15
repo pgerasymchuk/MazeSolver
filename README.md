@@ -1,106 +1,67 @@
-# MazeSolver - a C++ Library for solving the Shortest Path Problem
+# 🧭 MazeSolver — Dijkstra and A* in C++
 
-A C++ library for solving maze puzzles using **Dijkstra’s Algorithm** with an extensible design that can also support **A\*** (A‑Star) search.  
-It reads maze definitions from text files, validates them, and computes the shortest path between two coordinates.  
+A small C++ library and command-line tool that finds the shortest path through a grid maze. It reads a maze from a text file, validates it, solves it with **Dijkstra's algorithm** or **A\*** and writes the maze back with the path drawn on it.
 
-## 🚀 Aim of the Project
+## 🛠 How it works
 
-The project demonstrates practical implementation of shortest‑path algorithms in grid environments.  
-It provides a modular codebase that is easy to understand, extend, and integrate into larger systems.  
+- **`FileReader`** reads and writes the maze files, **`Parser`** turns the text into a character matrix and back.
+- **`Maze`** validates the input (rectangular shape, allowed symbols), stores walls as a boolean grid and returns the free neighbours of a cell (4-connected).
+- **`MazeSolver`** runs the search. Every cell is a graph vertex and every move costs 1.
+- **`PriorityQueue`** is my own binary-heap template used by both algorithms.
 
+### Dijkstra vs A*
 
-## 🛠 Implementation Details
+Both algorithms share one implementation and differ only in the priority of a cell in the queue:
 
-The library is built around several key components working together:
-- File input/output utilities for reading and writing maze files.  
-- A parser to convert text representations into an internal matrix format.  
-- Maze representation with validation, neighbor lookup, and visualization functions.  
-- A solver implementing Dijkstra’s algorithm, using a custom priority queue for efficiency.  
+| Algorithm | Priority | Result |
+|---|---|---|
+| Dijkstra | `g(n)` — distance from the start | shortest path, explores evenly in all directions |
+| A* | `g(n) + h(n)`, `h` = Manhattan distance to the target | shortest path, explores towards the target |
 
-The modular design makes it straightforward to replace or extend the solver with other algorithms such as A*.  
+The Manhattan distance never overestimates the remaining cost on a 4-connected grid, so A* still returns an optimal path. When two cells have the same estimate, A* takes the one closer to the target, which keeps it from spreading out in open areas. Outdated queue entries are skipped instead of using a decrease-key operation.
 
+### 📊 Comparison
 
-## 📊 Algorithm Comparison
+Number of cells expanded before the target is reached (both find paths of the same length):
 
-### Dijkstra’s Algorithm
-- Explores all nodes in increasing order of distance.  
-- Guarantees the shortest path in uniform grids.  
-- Complexity: **O(V log V + E)** with a binary heap.  
+| Maze | Path length | Dijkstra | A* |
+|---|---|---|---|
+| `data/input.txt` (8×8) | 13 | 19 | 16 |
+| `data/large_input.txt` (21×21, corridors) | 62 | 264 | 203 |
+| `data/open_input.txt` (21×21, empty room) | 36 | 361 | 37 |
 
-### A* Search
-- Uses heuristics (e.g., Manhattan distance) to reduce unnecessary exploration.  
-- Guarantees shortest path while typically exploring fewer nodes.  
-- More efficient in large mazes.  
-
-| Algorithm | Explored Nodes | Optimal Path Guarantee | Typical Speed |
-|-----------|----------------|-------------------------|---------------|
-| Dijkstra  | High (broad search) | ✅ Yes | Moderate |
-| A*        | Lower (guided search) | ✅ Yes | Faster |
-
-
-## ⚙️ Running Locally
-
-### 1. Build
-Use a C++17 compatible compiler. Example:
+## ⚙️ Build and run
 
 ```bash
-g++ -std=c++17 -o maze_solver main.cpp Cell.cpp FileReader.cpp Parser.cpp Maze.cpp MazeSolver.cpp PriorityQueue.cpp
+g++ -std=c++17 -O2 -o maze_solver main.cpp Cell.cpp FileReader.cpp Parser.cpp Maze.cpp MazeSolver.cpp
+./maze_solver data/large_input.txt output.txt astar
 ```
 
-### 2. Run
-Provide the input and output file paths:
-
-```bash
-./maze_solver input.txt output.txt
-```
-
-Then enter the start and end coordinates when prompted:
+The third argument is `astar` (default) or `dijkstra`. The program asks for the start and end cells as `row column` (0-based):
 
 ```
-Enter start coordinates (x y): 0 0
-Enter end coordinates (x y): 4 6
+Enter start coordinates (x y): 1 1
+Enter end coordinates (x y): 19 19
+Maze solved with A*: path length 62, expanded cells 203
+Output written to output.txt
 ```
 
-The solved maze will be written to the output file.  
+## 📝 File format
 
+`X` is a wall, a space is a free cell, symbols in a row are separated by single spaces. In the output the path is marked with `0–9`, `a–z`, `A–Z` (the sequence repeats on long paths).
 
-## 📝 Input / Output Format
-
-- **Input file**: maze represented with `#` for walls and `.` for free space, separated by spaces.  
-- **Output file**: same maze with the path marked using sequential characters (`0–9`, `a–z`, …).  
-
-### Example
-
-**Input**
 ```
-# # # # #
-# . . . #
-# # . # #
-# . . . #
-# # # # #
+input.txt                  output.txt (start 6 1, end 5 5)
+X X X X X X X X            X X X X X X X X
+X       X X   X            X 5 6 7 X X   X
+X   X   X X   X            X 4 X 8 X X   X
+X   X         X            X 3 X 9 a b   X
+X   X   X   X X            X 2 X   X c X X
+X   X   X   X X            X 1 X   X d X X
+X   X       X X            X 0 X       X X
+X X X X X X X X            X X X X X X X X
 ```
 
-**Output**
-```
-# # # # #
-# 0 1 2 #
-# # 3 # #
-# 5 4 3 #
-# # # # #
-```
+## 🛠️ Tech stack
 
-
-## 🌟 Highlights
-
-- Custom priority queue for didactic performance control.  
-- Clear separation of components (parsing, maze handling, solving).  
-- Straightforward extensibility to add more algorithms.  
-- Useful for testing, demonstrations, or as a building block in larger projects.  
-
-
-## 🔮 Future Improvements
-
-- Add **A*** implementation with heuristics.  
-- Benchmark performance across algorithms.  
-- Add visualization of the solving process.  
-- Extend to weighted mazes with varying traversal costs.  
+C++17 · STL · custom binary heap · no external dependencies
